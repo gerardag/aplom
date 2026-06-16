@@ -1,0 +1,17 @@
+services:
+  cartera:
+    build: .
+    container_name: cartera-rebalancer
+    ports:
+      # host:container — change the left side if 8080 is taken on your server
+      - "8080:3000"
+    volumes:
+      # named volume keeps the SQLite database across restarts and rebuilds
+      - cartera-data:/data
+    environment:
+      - PORT=3000
+      - DATA_DIR=/data
+    restart: unless-stopped
+
+volumes:
+  cartera-data:

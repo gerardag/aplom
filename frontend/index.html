@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repartidor d'aportacions — cartera indexada</title>
+<style>
+  :root{
+    --paper:#f3efe6;--ink:#1c2321;--ink-soft:#5b645f;--line:#d8d0c0;
+    --equity:#2f6f4f;--emerging:#b8762e;--bond:#3a5a78;
+    --positive:#2f6f4f;--warn:#9a3b2e;--radius:3px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.5;padding:clamp(1rem,4vw,3rem);max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.7rem;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.4rem;}
+  h1{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:600;letter-spacing:-.01em;line-height:1.1;margin-bottom:.5rem;}
+  .lede{color:var(--ink-soft);font-size:.95rem;max-width:54ch;margin-bottom:2rem;}
+  section{border-top:1px solid var(--line);padding-top:1.4rem;margin-top:1.8rem;}
+  h2{font-size:.78rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-soft);font-weight:500;margin-bottom:1rem;
+    display:flex;align-items:baseline;gap:.6rem;}
+  h2 .num{color:var(--ink);border:1px solid var(--line);border-radius:50%;width:1.4rem;height:1.4rem;
+    display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;flex:none;}
+  .fund-row{display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:center;
+    padding:.7rem 0;border-bottom:1px solid var(--line);}
+  .fund-row:last-child{border-bottom:none}
+  .fund-id{display:flex;align-items:center;gap:.6rem;min-width:0}
+  .dot{width:.7rem;height:.7rem;border-radius:50%;flex:none}
+  .dot.equity{background:var(--equity)}.dot.emerging{background:var(--emerging)}.dot.bond{background:var(--bond)}
+  .fund-name{font-size:.92rem;font-weight:600;line-height:1.2}
+  .fund-isin{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.68rem;color:var(--ink-soft);letter-spacing:.02em;}
+  .field{display:flex;align-items:center;gap:.35rem;justify-self:end}
+  .field label{font-size:.72rem;color:var(--ink-soft)}
+  input[type=number]{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.95rem;width:6.2rem;
+    text-align:right;padding:.4rem .5rem;border:1px solid var(--line);border-radius:var(--radius);
+    background:#fbf9f4;color:var(--ink);}
+  input[type=number]:focus{outline:2px solid var(--equity);outline-offset:-1px;border-color:transparent}
+  .suffix{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.8rem;color:var(--ink-soft)}
+  .target-line{display:flex;justify-content:space-between;align-items:baseline;font-size:.8rem;
+    color:var(--ink-soft);margin-top:.2rem;}
+  .target-warn{color:var(--warn);font-weight:600}
+  .month-tag{display:inline-flex;align-items:center;gap:.4rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:.72rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius);
+    padding:.3rem .55rem;margin-bottom:1rem;}
+  .month-tag input{font-family:inherit;font-size:.72rem;border:none;background:none;color:var(--ink);width:7.5rem;padding:0;}
+  .month-tag input:focus{outline:none}
+  .contribution-input{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
+  .contribution-input input{width:8rem;font-size:1.2rem}
+  .default-hint{font-size:.74rem;color:var(--ink-soft);margin-top:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .link-btn{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.72rem;background:none;border:none;
+    color:var(--equity);cursor:pointer;text-decoration:underline;padding:0}
+  .result-card{background:#fbf9f4;border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem;margin-top:1rem;}
+  .order{display:grid;grid-template-columns:auto 1fr auto;gap:.4rem 1rem;align-items:center;
+    padding:.8rem 0;border-bottom:1px solid var(--line);}
+  .order:last-of-type{border-bottom:none}
+  .order .dot{width:.85rem;height:.85rem}
+  .order-name{font-weight:600;font-size:.95rem}
+  .order-detail{font-size:.74rem;color:var(--ink-soft);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .order-amount{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:1.25rem;font-weight:600;text-align:right;white-space:nowrap;}
+  .order-amount.zero{color:var(--ink-soft);font-weight:400}
+  .order-pct{font-size:.7rem;color:var(--ink-soft);text-align:right}
+  .total-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:1rem;padding-top:1rem;
+    border-top:2px solid var(--ink);font-size:.85rem;}
+  .total-row .amt{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:1.1rem;font-weight:600}
+  .after-table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.8rem}
+  .after-table th,.after-table td{text-align:right;padding:.35rem .5rem;border-bottom:1px solid var(--line)}
+  .after-table th:first-child,.after-table td:first-child{text-align:left}
+  .after-table th{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.66rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+  .after-table .drift-ok{color:var(--positive)}.after-table .drift-off{color:var(--warn)}
+  .btn{font-family:inherit;font-size:.95rem;background:var(--ink);color:var(--paper);border:none;
+    border-radius:var(--radius);padding:.7rem 1.4rem;cursor:pointer;letter-spacing:.01em;transition:opacity .15s;}
+  .btn:hover{opacity:.85}
+  .btn:focus-visible{outline:2px solid var(--equity);outline-offset:2px}
+  .btn-row{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.2rem;align-items:center}
+  .btn-ghost{background:none;color:var(--ink-soft);border:1px solid var(--line);font-size:.82rem;padding:.55rem 1rem}
+  .saved-tag{font-size:.74rem;color:var(--positive);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .note{font-size:.78rem;color:var(--ink-soft);margin-top:.8rem;max-width:58ch}
+  .chart-block{margin-top:1.6rem}
+  .chart-title{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.7rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-soft);margin-bottom:.2rem;}
+  .chart-sub{font-size:.8rem;color:var(--ink-soft);margin-bottom:.7rem;max-width:56ch}
+  .chart-wrap{width:100%;overflow:hidden}
+  svg.chart{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.6rem;font-size:.76rem;color:var(--ink-soft)}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem}
+  .legend .swatch{width:.8rem;height:.8rem;border-radius:2px;flex:none}
+  .empty-history{font-size:.85rem;color:var(--ink-soft);background:#fbf9f4;border:1px dashed var(--line);
+    border-radius:var(--radius);padding:1.2rem;text-align:center;}
+  .hist-table{width:100%;border-collapse:collapse;margin-top:1.4rem;font-size:.78rem}
+  .hist-table th,.hist-table td{text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--line);white-space:nowrap}
+  .hist-table th:first-child,.hist-table td:first-child{text-align:left}
+  .hist-table th{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.64rem;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+  .hist-table .del{cursor:pointer;color:var(--ink-soft);border:none;background:none;font-size:.9rem;padding:0 .3rem;line-height:1}
+  .hist-table .del:hover{color:var(--warn)}
+  .hist-table tbody tr:hover{background:#fbf9f4}
+  details{margin-top:1.4rem;font-size:.85rem;color:var(--ink-soft)}
+  summary{cursor:pointer;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
+  details p{margin-top:.7rem;max-width:60ch}
+  .hidden{display:none}
+  #toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+    padding:.6rem 1.1rem;border-radius:var(--radius);font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+  #toast.show{opacity:1}
+  @media(max-width:560px){
+    .fund-row{grid-template-columns:1fr}.field{justify-self:start;margin-top:.3rem}
+    .order{grid-template-columns:auto 1fr;gap:.3rem .7rem}
+    .order-amount,.order-pct{grid-column:2;text-align:left;justify-self:start}
+  }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Cartera indexada · rebalanceig per aportació</div>
+  <h1>Repartidor d'aportacions</h1>
+  <p class="lede">Posa el saldo actual de cada fons (copiat de MyInvestor) i quant aportes aquest mes. Et dic quants euros van a cada fons per acostar-te al teu objectiu sense vendre res. Les dades es desen al servidor de casa.</p>
+
+  <section>
+    <h2><span class="num">1</span>Saldos actuals i pesos objectiu</h2>
+    <div id="funds"></div>
+    <div id="weight-check" class="target-line" style="margin-top:.9rem"></div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>Aportació d'aquest mes</h2>
+    <div class="month-tag"><span>mes:</span><input type="month" id="month" /></div>
+    <div class="contribution-input">
+      <input type="number" id="contribution" min="0" step="10" placeholder="400" inputmode="decimal">
+      <span class="suffix">€ a repartir</span>
+    </div>
+    <div class="default-hint" id="default-hint"></div>
+    <div class="btn-row">
+      <button class="btn" id="calc">Calcular repartiment</button>
+      <button class="btn btn-ghost" id="save">Desar saldos i pesos</button>
+      <span class="saved-tag hidden" id="saved-tag">desat ✓</span>
+    </div>
+  </section>
+
+  <section id="result-section" class="hidden">
+    <h2><span class="num">3</span>Ordres a passar a MyInvestor</h2>
+    <div class="result-card">
+      <div id="orders"></div>
+      <div class="total-row"><span>Total repartit</span><span class="amt" id="total-allocated">—</span></div>
+      <table class="after-table" id="after-table"></table>
+    </div>
+    <p class="note" id="result-note"></p>
+  </section>
+
+  <section id="history-section">
+    <h2><span class="num">4</span>Evolució de la cartera</h2>
+    <div id="history-body"></div>
+  </section>
+
+  <details>
+    <summary>Com es calcula</summary>
+    <p>El mètode és <strong>rebalanceig per flux de caixa</strong>: no es ven res. Es mira quant tens ara a cada fons, s'hi suma l'aportació, i els diners nous van als fons per sota del seu pes objectiu. No fan falta preus (NAV): tot es calcula amb imports en euros.</p>
+    <p>L'aportació mensual que poses queda desada com a <strong>valor per defecte</strong> i es precarrega cada mes fins que la canviïs. Cada cop que calcules, es desa una foto del mes (sobreescrivint si recalcules el mateix mes) i s'actualitzen els saldos actuals amb el resultat, de manera que el mes següent parteixes d'aquí.</p>
+    <p>Tota la informació viu en una base de dades SQLite al teu servidor, dins un volum Docker. No surt de la teva xarxa.</p>
+  </details>
+
+  <div id="toast"></div>
+
+<script>
+const API = ""; // same origin
+let FUNDS = [];
+let DEFAULT_CONTRIBUTION = "";
+const HEX = { equity:"#2f6f4f", emerging:"#b8762e", bond:"#3a5a78" };
+
+const eur=n=>n.toLocaleString("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const pct=n=>n.toLocaleString("ca-ES",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
+
+async function api(path,opts){
+  const res=await fetch(API+path,{headers:{"Content-Type":"application/json"},...opts});
+  if(!res.ok){let m="Error";try{m=(await res.json()).error||m;}catch(e){}throw new Error(m);}
+  return res.json();
+}
+
+// ---- load state from server ----
+async function init(){
+  const st=await api("/api/state");
+  FUNDS=st.funds;
+  DEFAULT_CONTRIBUTION=st.defaultContribution||"";
+  renderFunds(st.balances);
+  updateWeightCheck();
+  // month + contribution defaults
+  const d=new Date();
+  document.getElementById("month").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  const cEl=document.getElementById("contribution");
+  if(DEFAULT_CONTRIBUTION!=="")cEl.value=DEFAULT_CONTRIBUTION;
+  renderDefaultHint();
+  await renderHistory();
+}
+
+function renderDefaultHint(){
+  const el=document.getElementById("default-hint");
+  if(DEFAULT_CONTRIBUTION!==""){
+    el.innerHTML=`Aportació per defecte: <strong>${eur(Number(DEFAULT_CONTRIBUTION))}</strong>. <button class="link-btn" id="clear-default">canviar</button>`;
+    el.querySelector("#clear-default").addEventListener("click",async()=>{
+      const v=prompt("Nova aportació mensual per defecte (€):",DEFAULT_CONTRIBUTION);
+      if(v!==null){await api("/api/settings/contribution",{method:"PUT",body:JSON.stringify({value:v})});DEFAULT_CONTRIBUTION=v;document.getElementById("contribution").value=v;renderDefaultHint();toast("Aportació per defecte actualitzada");}
+    });
+  }else{
+    el.innerHTML=`<button class="link-btn" id="set-default">Fixar aquesta aportació com a valor per defecte</button>`;
+    el.querySelector("#set-default").addEventListener("click",async()=>{
+      const v=document.getElementById("contribution").value;
+      if(!(Number(v)>0)){toast("Posa una aportació primer");return;}
+      await api("/api/settings/contribution",{method:"PUT",body:JSON.stringify({value:v})});
+      DEFAULT_CONTRIBUTION=v;renderDefaultHint();toast("Aportació per defecte fixada");
+    });
+  }
+}
+
+// ---- render fund inputs ----
+const fundsEl=document.getElementById("funds");
+let localBalances={},localTargets={};
+function renderFunds(balances){
+  localBalances={...balances};
+  localTargets={};FUNDS.forEach(f=>localTargets[f.fund_key]=f.target);
+  fundsEl.innerHTML="";
+  FUNDS.forEach(f=>{
+    const row=document.createElement("div");
+    row.className="fund-row";
+    row.innerHTML=`
+      <div class="fund-id">
+        <span class="dot ${f.css_class}"></span>
+        <div><div class="fund-name">${f.name}</div><div class="fund-isin">${f.isin}</div></div>
+      </div>
+      <div class="field">
+        <label>saldo</label>
+        <input type="number" id="bal-${f.fund_key}" min="0" step="0.01" inputmode="decimal"
+               value="${balances[f.fund_key]??""}" placeholder="0,00">
+        <span class="suffix">€</span>
+        <input type="number" id="tgt-${f.fund_key}" min="0" max="100" step="1" inputmode="numeric"
+               value="${f.target}" style="width:3.4rem" title="pes objectiu %">
+        <span class="suffix">%</span>
+      </div>`;
+    fundsEl.appendChild(row);
+    row.querySelector(`#bal-${f.fund_key}`).addEventListener("input",e=>{localBalances[f.fund_key]=e.target.value===""?null:parseFloat(e.target.value);});
+    row.querySelector(`#tgt-${f.fund_key}`).addEventListener("input",e=>{localTargets[f.fund_key]=e.target.value===""?0:parseFloat(e.target.value);updateWeightCheck();});
+  });
+}
+
+function updateWeightCheck(){
+  const sum=FUNDS.reduce((a,f)=>a+(parseFloat(localTargets[f.fund_key])||0),0);
+  const el=document.getElementById("weight-check");
+  if(Math.abs(sum-100)<0.01){el.innerHTML=`<span>Pes objectiu total</span><span>${sum}% ✓</span>`;el.classList.remove("target-warn");}
+  else{el.innerHTML=`<span>Pes objectiu total</span><span class="target-warn">${sum}% — ha de sumar 100%</span>`;}
+}
+
+async function saveState(){
+  // push balances + targets to server
+  await api("/api/balances",{method:"PUT",body:JSON.stringify({balances:localBalances})});
+  await api("/api/funds",{method:"PUT",body:JSON.stringify({funds:FUNDS.map(f=>({fund_key:f.fund_key,target:localTargets[f.fund_key]}))})});
+  FUNDS.forEach(f=>f.target=localTargets[f.fund_key]);
+}
+
+async function calculate(){
+  const sum=FUNDS.reduce((a,f)=>a+(parseFloat(localTargets[f.fund_key])||0),0);
+  if(Math.abs(sum-100)>0.01){updateWeightCheck();toast("Els pesos han de sumar 100%");return;}
+  const contribution=parseFloat(document.getElementById("contribution").value)||0;
+  if(contribution<=0){document.getElementById("contribution").focus();return;}
+  const month=document.getElementById("month").value||null;
+  // save current inputs first so server computes from fresh balances/targets
+  await saveState();
+  let r;
+  try{r=await api("/api/calculate",{method:"POST",body:JSON.stringify({contribution,month,record:true,persistBalances:true})});}
+  catch(e){toast(e.message);return;}
+  renderResult(r,contribution);
+  await refreshBalancesFromServer();
+  await renderHistory();
+  document.getElementById("result-section").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function refreshBalancesFromServer(){
+  const st=await api("/api/state");
+  FUNDS=st.funds;
+  renderFunds(st.balances);
+  updateWeightCheck();
+}
+
+function renderResult(r,contribution){
+  const ordersEl=document.getElementById("orders");ordersEl.innerHTML="";
+  r.allocation.forEach(a=>{
+    const f=FUNDS.find(x=>x.fund_key===a.fund_key);
+    const o=document.createElement("div");o.className="order";
+    o.innerHTML=`
+      <span class="dot ${f.css_class}"></span>
+      <div><div class="order-name">${f.name}</div><div class="order-detail">${f.isin}</div></div>
+      <div><div class="order-amount ${a.amount<0.005?"zero":""}">${a.amount<0.005?"—":eur(a.amount)}</div>
+      <div class="order-pct">${pct(a.afterPct)} després · obj. ${f.target}%</div></div>`;
+    ordersEl.appendChild(o);
+  });
+  document.getElementById("total-allocated").textContent=eur(r.allocation.reduce((s,a)=>s+a.amount,0));
+  const t=document.getElementById("after-table");
+  t.innerHTML=`<tr><th>Fons</th><th>Ara</th><th>+Aporta</th><th>Després</th><th>Pes</th></tr>`;
+  r.allocation.forEach(a=>{
+    const f=FUNDS.find(x=>x.fund_key===a.fund_key);
+    const off=Math.abs(a.afterPct-f.target)>1.5;
+    t.innerHTML+=`<tr><td>${f.name.split(" ")[0]} ${f.name.includes("Emerg")?"emerg.":f.name.includes("fixa")?"fixa":"global"}</td>
+      <td>${eur(r.current[a.fund_key])}</td><td>${a.amount<0.005?"—":eur(a.amount)}</td>
+      <td>${eur(a.after)}</td><td class="${off?"drift-off":"drift-ok"}">${pct(a.afterPct)}</td></tr>`;
+  });
+  t.innerHTML+=`<tr style="font-weight:600"><td>Total</td><td>${eur(r.totalNow)}</td><td>${eur(contribution)}</td><td>${eur(r.totalAfter)}</td><td>100%</td></tr>`;
+  const maxDrift=Math.max(...r.allocation.map(a=>{const f=FUNDS.find(x=>x.fund_key===a.fund_key);return Math.abs(a.afterPct-f.target);}));
+  document.getElementById("result-note").textContent= maxDrift<=1.5
+    ? "Aquesta aportació et deixa la cartera pràcticament al teu objectiu. Passa les tres ordres a MyInvestor amb aquests imports."
+    : "L'aportació d'aquest mes no arriba a corregir tota la desviació, així que tot va als fons que estan més per sota. La cartera s'hi acosta; els pròxims mesos acabaran d'ajustar-la.";
+  document.getElementById("result-section").classList.remove("hidden");
+}
+
+// ---- charts (same as before) ----
+const monthLabel=m=>{const [y,mo]=m.split("-");const names=["gen","feb","mar","abr","mai","jun","jul","ago","set","oct","nov","des"];return names[parseInt(mo,10)-1]+" "+y.slice(2);};
+function lineChart(series,labels,opts){
+  const W=680,H=opts.h||220,padL=opts.padL||52,padR=14,padT=12,padB=28;
+  const allY=series.flatMap(s=>s.values.map(v=>v.y));
+  let minY=opts.min!=null?opts.min:Math.min(...allY,0);
+  let maxY=opts.max!=null?opts.max:Math.max(...allY);
+  if(minY===maxY)maxY=minY+1;
+  const n=labels.length;
+  const xAt=i=>padL+(n<=1?(W-padL-padR)/2:(i/(n-1))*(W-padL-padR));
+  const yAt=v=>padT+(1-(v-minY)/(maxY-minY))*(H-padT-padB);
+  const fmtY=opts.pct?(v=>v.toFixed(0)+"%"):(v=>Math.round(v).toLocaleString("ca-ES"));
+  let g="";
+  for(let t=0;t<=4;t++){const v=minY+(maxY-minY)*t/4;const y=yAt(v);
+    g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    g+=`<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="var(--ink-soft)" font-family="monospace">${fmtY(v)}</text>`;}
+  (opts.refs||[]).forEach(ref=>{const y=yAt(ref.v);g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${ref.color}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;});
+  labels.forEach((lb,i)=>{if(n>8&&i%Math.ceil(n/8)!==0&&i!==n-1)return;g+=`<text x="${xAt(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--ink-soft)" font-family="monospace">${lb}</text>`;});
+  series.forEach(s=>{const pts=s.values.map((v,i)=>`${xAt(i)},${yAt(v.y)}`).join(" ");
+    g+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.values.forEach((v,i)=>{g+=`<circle cx="${xAt(i)}" cy="${yAt(v.y)}" r="2.5" fill="${s.color}"/>`;});});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img">${g}</svg>`;
+}
+
+async function renderHistory(){
+  const {history:h}=await api("/api/history");
+  const body=document.getElementById("history-body");
+  if(!h.length){body.innerHTML=`<div class="empty-history">Encara no hi ha històric. Calcula el repartiment d'aquest mes i es desarà automàticament la primera foto.</div>`;return;}
+  const labels=h.map(s=>monthLabel(s.month));
+  const colorOf=k=>HEX[(FUNDS.find(f=>f.fund_key===k)||{}).css_class]||"#888";
+  const valSeries=FUNDS.map(f=>({color:colorOf(f.fund_key),values:h.map(s=>({y:s.balances[f.fund_key]||0}))}));
+  const totalSeries=[{color:"#1c2321",values:h.map(s=>({y:s.total||0}))}];
+  const wSeries=FUNDS.map(f=>({color:colorOf(f.fund_key),values:h.map(s=>{const t=s.total||0;return{y:t>0?(s.balances[f.fund_key]/t*100):0};})}));
+  const refs=FUNDS.map(f=>({v:f.target,color:colorOf(f.fund_key)}));
+  let cum=0;const contribCum=h.map(s=>{cum+=s.contribution||0;return cum;});
+  const investedSeries=[{color:"#1c2321",values:h.map(s=>({y:s.total||0}))},{color:"#9a3b2e",values:contribCum.map(c=>({y:c}))}];
+  const legend=items=>`<div class="legend">${items.map(it=>`<span><span class="swatch" style="background:${it.c}"></span>${it.l}</span>`).join("")}</div>`;
+  const fundLegend=FUNDS.map(f=>({c:colorOf(f.fund_key),l:f.name.split(" ").slice(0,2).join(" ")}));
+  body.innerHTML=`
+    <div class="chart-block">
+      <div class="chart-title">Valor de cada fons i total · €</div>
+      <div class="chart-sub">Quant val cada posició mes a mes. La línia negra és la cartera sencera.</div>
+      <div class="chart-wrap">${lineChart([...valSeries,...totalSeries],labels,{min:0})}</div>
+      ${legend([...fundLegend,{c:"#1c2321",l:"Total"}])}
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Pesos reals vs objectiu · %</div>
+      <div class="chart-sub">El pes real de cada fons. Les línies puntejades són els teus objectius. Com més enganxades, més equilibrada.</div>
+      <div class="chart-wrap">${lineChart(wSeries,labels,{min:0,max:Math.max(70,...wSeries.flatMap(s=>s.values.map(v=>v.y)))+5,pct:true,refs})}</div>
+      ${legend(FUNDS.map(f=>({c:colorOf(f.fund_key),l:f.name.split(" ").slice(0,2).join(" ")+" (obj. "+f.target+"%)"})))}
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Valor vs aportat acumulat · €</div>
+      <div class="chart-sub">La distància entre les línies és el rendiment: si el valor (negre) supera el que has aportat des de l'inici del seguiment (vermell), hi ha guanys.</div>
+      <div class="chart-wrap">${lineChart(investedSeries,labels,{min:0})}</div>
+      ${legend([{c:"#1c2321",l:"Valor de la cartera"},{c:"#9a3b2e",l:"Aportat acumulat (des de l'inici del seguiment)"}])}
+    </div>
+    ${histTable(h)}`;
+  body.querySelectorAll(".del").forEach(btn=>btn.addEventListener("click",async()=>{
+    if(confirm("Esborrar la foto de "+btn.dataset.month+"?")){await api("/api/history/"+btn.dataset.month,{method:"DELETE"});await renderHistory();}
+  }));
+}
+function histTable(h){
+  const rows=h.map(s=>`<tr><td>${monthLabel(s.month)}</td>
+    ${FUNDS.map(f=>`<td>${eur(s.balances[f.fund_key]||0)}</td>`).join("")}
+    <td><strong>${eur(s.total||0)}</strong></td><td>+${eur(s.contribution||0)}</td>
+    <td><button class="del" title="Esborrar" data-month="${s.month}">×</button></td></tr>`).join("");
+  return `<table class="hist-table"><thead><tr><th>Mes</th>
+    ${FUNDS.map(f=>`<th>${f.name.split(" ")[1]||f.name}</th>`).join("")}
+    <th>Total</th><th>Aportat</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ---- wire up ----
+document.getElementById("calc").addEventListener("click",()=>calculate().catch(e=>toast(e.message)));
+document.getElementById("save").addEventListener("click",async()=>{
+  try{await saveState();const tag=document.getElementById("saved-tag");tag.classList.remove("hidden");setTimeout(()=>tag.classList.add("hidden"),1800);}
+  catch(e){toast(e.message);}
+});
+document.getElementById("contribution").addEventListener("keydown",e=>{if(e.key==="Enter")calculate().catch(er=>toast(er.message));});
+init().catch(e=>{document.body.insertAdjacentHTML("beforeend",`<p style="color:var(--warn);margin-top:1rem">No s'ha pogut connectar amb el servidor: ${e.message}</p>`);});
+</script>
+</body>
+</html>

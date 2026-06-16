@@ -1,0 +1,16 @@
+{
+  "name": "cartera-rebalancer-backend",
+  "version": "1.0.0",
+  "description": "Backend per al repartidor d'aportacions de cartera indexada",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
