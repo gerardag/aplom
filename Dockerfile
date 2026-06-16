@@ -21,9 +21,7 @@ ENV NODE_NO_WARNINGS=1
 
 EXPOSE 3000
 
-# Run as the unprivileged built-in node user; ensure /app/data is writable
-RUN mkdir -p /app/data && chown -R node:node /app
-USER node
+RUN mkdir -p /app/data
 
 # node:sqlite still lives behind a flag on Node 22 — without it the import throws.
 CMD ["node", "--experimental-sqlite", "server.js"]
