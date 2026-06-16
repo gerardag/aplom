@@ -108,6 +108,17 @@ que el mes següent ja parteixes d'aquí.
 | GET | `/api/history` | històric mensual |
 | DELETE | `/api/history/:month` | esborrar la foto d'un mes |
 
+## Commits i releases
+
+Els commits han de seguir [Conventional Commits](https://www.conventionalcommits.org)
+(`feat:`, `fix:`, etc.): cada push a `main` en deriva automàticament la nova versió
+i en publica una release amb la imatge a `ghcr.io`. Hi ha un hook que rebutja els
+missatges que no compleixin el format; activa'l un cop després de clonar:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Nota
 
 Aquesta és una eina de càlcul personal, no assessorament financer. El mètode de
