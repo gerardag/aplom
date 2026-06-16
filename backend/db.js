@@ -1,8 +1,10 @@
 import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 
-const DATA_DIR = process.env.DATA_DIR || "/data";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const DB_PATH = path.join(DATA_DIR, "cartera.db");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });

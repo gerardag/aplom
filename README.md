@@ -41,10 +41,10 @@ cd cartera-rebalancer
 docker compose up -d --build
 ```
 
-Obre `http://<ip-del-servidor>:8080` des de qualsevol dispositiu de la xarxa local.
+Obre `http://<ip-del-servidor>:3000` des de qualsevol dispositiu de la xarxa local.
 
 Per canviar el port, edita el costat esquerre del mapatge a `docker-compose.yml`
-(per defecte `8080:3000`).
+(per defecte `3000:3000`).
 
 ### Comandes útils
 
@@ -56,20 +56,16 @@ docker compose up -d --build  # reconstruir després de canvis
 
 ## On viuen les dades
 
-A la base de dades SQLite del volum Docker `cartera-data`, muntat a `/data` dins
-del contenidor. Sobreviu a reinicis i reconstruccions de la imatge. `docker compose down`
-**no** esborra el volum; per esborrar-lo del tot: `docker compose down -v` (perds l'històric).
+A la base de dades SQLite dins la carpeta `./data` del projecte, muntada a `/app/data`
+dins del contenidor (bind mount). Sobreviu a reinicis i reconstruccions de la imatge.
+`docker compose down` **no** toca la carpeta; per esborrar l'històric, esborra `./data`.
 
 ### Còpia de seguretat
 
 ```bash
-# exportar la base de dades a un fitxer local
-docker run --rm -v cartera-rebalancer_cartera-data:/data -v "$PWD":/backup \
-  alpine sh -c "cp /data/cartera.db /backup/cartera-backup.db"
+# la base de dades és un fitxer normal al teu disc
+cp ./data/cartera.db ./cartera-backup.db
 ```
-
-(El nom del volum pot dur el prefix del directori del projecte; comprova'l amb
-`docker volume ls`.)
 
 ## Ús mensual
 

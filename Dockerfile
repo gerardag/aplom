@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -15,11 +15,15 @@ COPY frontend/ ./public/
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV DATA_DIR=/data
+ENV DATA_DIR=/app/data
 # node:sqlite is stable enough for personal use; silence the experimental notice
 ENV NODE_NO_WARNINGS=1
 
 EXPOSE 3000
-VOLUME ["/data"]
 
-CMD ["node", "server.js"]
+# Run as the unprivileged built-in node user; ensure /app/data is writable
+RUN mkdir -p /app/data && chown -R node:node /app
+USER node
+
+# node:sqlite still lives behind a flag on Node 22 — without it the import throws.
+CMD ["node", "--experimental-sqlite", "server.js"]
