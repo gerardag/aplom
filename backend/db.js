@@ -39,23 +39,22 @@ db.exec(`
   );
 `);
 
-const DEFAULT_FUNDS = [
-  { fund_key: "dev",  name: "RV Global desenvolupat",         isin: "IE00B03HCZ61", css_class: "equity",   target: 60, sort_order: 1 },
-  { fund_key: "emrg", name: "RV Emergents",                   isin: "IE000QAZP7L2", css_class: "emerging", target: 10, sort_order: 2 },
-  { fund_key: "bond", name: "Renda fixa global (EUR hedged)", isin: "IE00B18GC888", css_class: "bond",     target: 30, sort_order: 3 },
-];
-
-const fundCount = db.prepare("SELECT COUNT(*) AS n FROM funds").get().n;
-if (fundCount === 0) {
-  const insFund = db.prepare(
-    "INSERT INTO funds (fund_key,name,isin,css_class,target,sort_order) VALUES (?,?,?,?,?,?)"
-  );
-  const insBal = db.prepare("INSERT INTO balances (fund_key,amount) VALUES (?, NULL)");
-  for (const f of DEFAULT_FUNDS) {
-    insFund.run(f.fund_key, f.name, f.isin, f.css_class, f.target, f.sort_order);
-    insBal.run(f.fund_key);
+// ---- migration: per-fund color (replaces the old fixed css_class palette) ----
+const fundCols = db.prepare("PRAGMA table_info(funds)").all();
+if (!fundCols.some((c) => c.name === "color")) {
+  db.exec("ALTER TABLE funds ADD COLUMN color TEXT");
+  const legacy = { equity: "#2f6f4f", emerging: "#b8762e", bond: "#3a5a78" };
+  const upd = db.prepare("UPDATE funds SET color = ? WHERE fund_key = ?");
+  for (const r of db.prepare("SELECT fund_key, css_class FROM funds").all()) {
+    upd.run(legacy[r.css_class] || "#5b645f", r.fund_key);
   }
 }
+
+// Colors offered to new funds, in assignment order. Tuned to the earthy palette.
+const PALETTE = [
+  "#2f6f4f", "#3a5a78", "#b8762e", "#9a3b2e", "#5b6b3a",
+  "#7a5a78", "#4f7a8a", "#a8843e", "#6b5f4f", "#3a6b6b",
+];
 
 function getSetting(key, fallback = null) {
   const row = db.prepare("SELECT value FROM settings WHERE key = ?").get(key);
@@ -69,4 +68,4 @@ function setSetting(key, value) {
 
 if (getSetting("default_contribution") === null) setSetting("default_contribution", "");
 
-export { db, getSetting, setSetting };
+export { db, getSetting, setSetting, PALETTE };
