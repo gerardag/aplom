@@ -23,16 +23,23 @@
   h2{font-size:.78rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;letter-spacing:.14em;
     text-transform:uppercase;color:var(--ink-soft);font-weight:500;margin-bottom:1rem;
     display:flex;align-items:baseline;gap:.6rem;}
-  h2 .num{color:var(--ink);border:1px solid var(--line);border-radius:50%;width:1.4rem;height:1.4rem;
-    display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;flex:none;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:1rem;}
+  .section-head h2{margin-bottom:0;flex:1;min-width:0}
+  .section-head .link-btn{white-space:nowrap}
+  h2 .num{display:none}
   .fund-row{display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:center;
     padding:.7rem 0;border-bottom:1px solid var(--line);}
   .fund-row:last-child{border-bottom:none}
   .fund-id{display:flex;align-items:center;gap:.6rem;min-width:0}
+  .fund-id>div{min-width:0}
   .dot{width:.7rem;height:.7rem;border-radius:50%;flex:none}
-  .dot.equity{background:var(--equity)}.dot.emerging{background:var(--emerging)}.dot.bond{background:var(--bond)}
-  .fund-name{font-size:.92rem;font-weight:600;line-height:1.2}
+  .fund-name{font-size:.92rem;font-weight:600;line-height:1.2;display:flex;align-items:center;gap:.4rem;min-width:0}
+  .fund-name-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .fund-edit{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:.8rem;padding:0;line-height:1;opacity:.55}
+  .fund-edit:hover{opacity:1;color:var(--ink)}
   .fund-isin{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.68rem;color:var(--ink-soft);letter-spacing:.02em;}
+  .fund-isin a{color:inherit;text-decoration:none;}
+  .fund-isin a:hover{text-decoration:underline;}
   .field{display:flex;align-items:center;gap:.35rem;justify-self:end}
   .field label{font-size:.72rem;color:var(--ink-soft)}
   input[type=number]{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.95rem;width:6.2rem;
@@ -43,14 +50,7 @@
   .target-line{display:flex;justify-content:space-between;align-items:baseline;font-size:.8rem;
     color:var(--ink-soft);margin-top:.2rem;}
   .target-warn{color:var(--warn);font-weight:600}
-  .month-tag{display:inline-flex;align-items:center;gap:.4rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;
-    font-size:.72rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius);
-    padding:.3rem .55rem;margin-bottom:1rem;}
-  .month-tag input{font-family:inherit;font-size:.72rem;border:none;background:none;color:var(--ink);width:7.5rem;padding:0;}
-  .month-tag input:focus{outline:none}
-  .contribution-input{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
-  .contribution-input input{width:8rem;font-size:1.2rem}
-  .default-hint{font-size:.74rem;color:var(--ink-soft);margin-top:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .calc-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1.2rem}
   .link-btn{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.72rem;background:none;border:none;
     color:var(--equity);cursor:pointer;text-decoration:underline;padding:0}
   .result-card{background:#fbf9f4;border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem;margin-top:1rem;}
@@ -60,6 +60,8 @@
   .order .dot{width:.85rem;height:.85rem}
   .order-name{font-weight:600;font-size:.95rem}
   .order-detail{font-size:.74rem;color:var(--ink-soft);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .order-detail a{color:inherit;text-decoration:none;}
+  .order-detail a:hover{text-decoration:underline;}
   .order-amount{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:1.25rem;font-weight:600;text-align:right;white-space:nowrap;}
   .order-amount.zero{color:var(--ink-soft);font-weight:400}
   .order-pct{font-size:.7rem;color:var(--ink-soft);text-align:right}
@@ -106,41 +108,96 @@
   #toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);
     padding:.6rem 1.1rem;border-radius:var(--radius);font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
   #toast.show{opacity:1}
+  .btn-danger{background:var(--warn);color:var(--paper)}
+  .btn-danger:hover{opacity:.85}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:100}
+  .modal-overlay.hidden{display:none}
+  .modal{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem;max-width:360px;width:90%}
+  .modal h3{font-size:1rem;font-weight:600;margin-bottom:.6rem}
+  .modal p{font-size:.88rem;color:var(--ink-soft);margin-bottom:1.2rem;max-width:none}
+  .modal-field{display:block;margin-bottom:1rem}
+  .modal-field>span{display:block;font-size:.74rem;color:var(--ink-soft);margin-bottom:.3rem}
+  .modal-field input{width:100%;font-family:inherit;font-size:.95rem;padding:.5rem .6rem;border:1px solid var(--line);
+    border-radius:var(--radius);background:#fbf9f4;color:var(--ink)}
+  .modal-field input:focus{outline:2px solid var(--equity);outline-offset:-1px;border-color:transparent}
+  .modal-field input:disabled{color:var(--ink-soft);background:#efe9dd;cursor:not-allowed}
+  .isin-input{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .swatches{display:flex;flex-wrap:wrap;gap:.45rem}
+  .swatch-btn{width:1.7rem;height:1.7rem;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;outline-offset:2px}
+  .swatch-btn.sel{border-color:var(--ink)}
+  .welcome-card{text-align:center;padding:3rem 1.4rem;border:1px dashed var(--line);border-radius:var(--radius);
+    background:#fbf9f4;margin-top:2rem}
+  .welcome-title{font-size:1.5rem;font-weight:600;margin-bottom:.6rem}
+  .welcome-card p{color:var(--ink-soft);max-width:44ch;margin:0 auto 1.6rem}
+  footer{border-top:1px solid var(--line);margin-top:3rem;padding-top:1.4rem;padding-bottom:2rem}
+  .footer-row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem .8rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.68rem;color:var(--ink-soft)}
+  .footer-links{display:flex;gap:.8rem;flex-wrap:wrap}
+  .footer-link{background:none;border:none;font-family:inherit;font-size:inherit;color:var(--ink-soft);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+  .footer-link:hover{color:var(--ink)}
+  .footer-disclaimer{margin-top:.7rem;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.63rem;color:var(--ink-soft);opacity:.6;max-width:72ch;line-height:1.55}
+  .faq-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:1rem}
+  .faq-modal-overlay.hidden{display:none}
+  .faq-modal{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:1.8rem;max-width:640px;width:100%;max-height:90vh;overflow-y:auto}
+  .faq-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem}
+  .faq-modal-title{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .faq-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-soft);padding:0;line-height:1}
+  .faq-close:hover{color:var(--ink)}
+  .faq-item{padding:.9rem 0;border-bottom:1px solid var(--line)}
+  .faq-item:last-child{border-bottom:none}
+  .faq-q{font-size:.88rem;font-weight:600;margin-bottom:.35rem}
+  .faq-a{font-size:.83rem;color:var(--ink-soft);line-height:1.6;max-width:58ch}
   @media(max-width:560px){
     .fund-row{grid-template-columns:1fr}.field{justify-self:start;margin-top:.3rem}
     .order{grid-template-columns:auto 1fr;gap:.3rem .7rem}
     .order-amount,.order-pct{grid-column:2;text-align:left;justify-self:start}
+    .faq-grid{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
-  <div class="eyebrow">Cartera indexada · rebalanceig per aportació</div>
-  <h1>Repartidor d'aportacions</h1>
-  <p class="lede">Posa el saldo actual de cada fons (copiat de MyInvestor) i quant aportes aquest mes. Et dic quants euros van a cada fons per acostar-te al teu objectiu sense vendre res. Les dades es desen al servidor de casa.</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <div class="eyebrow">Cartera indexada · rebalanceig per aportació</div>
+      <h1>Repartidor d'aportacions</h1>
+    </div>
+    <button class="btn btn-ghost" id="reset-btn" style="font-size:.75rem;padding:.4rem .8rem;white-space:nowrap;margin-top:.3rem;flex:none">Reset de les dades</button>
+  </div>
 
-  <section>
-    <h2><span class="num">1</span>Saldos actuals i pesos objectiu</h2>
-    <div id="funds"></div>
-    <div id="weight-check" class="target-line" style="margin-top:.9rem"></div>
+  <div id="reset-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Reiniciar les dades</h3>
+      <p>S'esborraran tots els fons, els saldos, l'historial i l'aportació per defecte. Tornaràs a la pantalla d'inici per començar de nou. Aquesta acció no es pot desfer.</p>
+      <div class="btn-row">
+        <button class="btn btn-danger" id="reset-confirm">Sí, reiniciar</button>
+        <button class="btn btn-ghost" id="reset-cancel">Cancel·lar</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="welcome" class="hidden">
+    <div class="welcome-card">
+      <div class="welcome-title">Comença la teva cartera</div>
+      <p>Encara no tens cap fons. Afegeix el primer per començar a repartir les teves aportacions mensuals.</p>
+      <button class="btn" id="add-first-fund">Afegir el primer fons</button>
+    </div>
   </section>
 
+  <div id="app">
   <section>
-    <h2><span class="num">2</span>Aportació d'aquest mes</h2>
-    <div class="month-tag"><span>mes:</span><input type="month" id="month" /></div>
-    <div class="contribution-input">
-      <input type="number" id="contribution" min="0" step="10" placeholder="400" inputmode="decimal">
-      <span class="suffix">€ a repartir</span>
+    <div class="section-head">
+      <h2>Saldos actuals i pesos objectiu</h2>
+      <button class="link-btn" id="add-fund">+ Afegir fons</button>
     </div>
-    <div class="default-hint" id="default-hint"></div>
-    <div class="btn-row">
+    <div id="funds"></div>
+    <div id="weight-check" class="target-line" style="margin-top:.9rem;padding-bottom:1.4rem;border-bottom:1px solid var(--line)"></div>
+    <div class="calc-row" style="justify-content:space-between">
       <button class="btn" id="calc">Calcular repartiment</button>
-      <button class="btn btn-ghost" id="save">Desar saldos i pesos</button>
-      <span class="saved-tag hidden" id="saved-tag">desat ✓</span>
+      <button class="link-btn" id="edit-contribution" style="font-size:.78rem">Aportació: <span id="contribution-display">200 €</span></button>
     </div>
   </section>
 
   <section id="result-section" class="hidden">
-    <h2><span class="num">3</span>Ordres a passar a MyInvestor</h2>
+    <h2>Ordres a passar a MyInvestor</h2>
     <div class="result-card">
       <div id="orders"></div>
       <div class="total-row"><span>Total repartit</span><span class="amt" id="total-allocated">—</span></div>
@@ -150,25 +207,97 @@
   </section>
 
   <section id="history-section">
-    <h2><span class="num">4</span>Evolució de la cartera</h2>
+    <h2>Evolució de la cartera</h2>
     <div id="history-body"></div>
   </section>
+  </div>
 
-  <details>
-    <summary>Com es calcula</summary>
-    <p>El mètode és <strong>rebalanceig per flux de caixa</strong>: no es ven res. Es mira quant tens ara a cada fons, s'hi suma l'aportació, i els diners nous van als fons per sota del seu pes objectiu. No fan falta preus (NAV): tot es calcula amb imports en euros.</p>
-    <p>L'aportació mensual que poses queda desada com a <strong>valor per defecte</strong> i es precarrega cada mes fins que la canviïs. Cada cop que calcules, es desa una foto del mes (sobreescrivint si recalcules el mateix mes) i s'actualitzen els saldos actuals amb el resultat, de manera que el mes següent parteixes d'aquí.</p>
-    <p>Tota la informació viu en una base de dades SQLite al teu servidor, dins un volum Docker. No surt de la teva xarxa.</p>
-  </details>
+  <div id="fund-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 id="fund-modal-title">Afegir fons</h3>
+      <form id="fund-form">
+        <label class="modal-field"><span>Nom del fons</span>
+          <input type="text" id="fund-name" placeholder="p. ex. RV Global desenvolupat" maxlength="80" autocomplete="off"></label>
+        <label class="modal-field"><span>ISIN</span>
+          <input type="text" id="fund-isin" class="isin-input" placeholder="p. ex. IE00B03HCZ61" maxlength="20" autocomplete="off"></label>
+        <div class="modal-field" id="fund-color-field" style="display:none"><span>Color</span>
+          <div class="swatches" id="fund-swatches"></div></div>
+        <div class="btn-row">
+          <button type="submit" class="btn">Desar</button>
+          <button type="button" class="btn btn-ghost" id="fund-cancel">Cancel·lar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="contribution-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Aportació per defecte</h3>
+      <form id="contribution-form">
+        <label class="modal-field"><span>Import mensual</span>
+          <input type="number" id="contribution-input" min="0" step="10" placeholder="200" inputmode="decimal">
+          <input type="hidden" id="contribution">
+        </label>
+        <div class="btn-row">
+          <button type="submit" class="btn">Desar</button>
+          <button type="button" class="btn btn-ghost" id="contribution-cancel">Cancel·lar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div id="toast"></div>
+
+  <div id="faq-modal" class="faq-modal-overlay hidden">
+    <div class="faq-modal">
+      <div class="faq-modal-header">
+        <span class="faq-modal-title">Com funciona</span>
+        <button class="faq-close" id="faq-close">×</button>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Com es calcula el repartiment?</div>
+        <div class="faq-a">S'utilitza el mètode de <strong>rebalanceig per flux de caixa</strong>: no es ven res. Es mira el saldo actual de cada fons, se sumen els diners nous, i tota l'aportació va als fons que estan per sota del seu pes objectiu. No calen preus (NAV): tot es treballa en euros.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Què fa el botó "Calcular repartiment"?</div>
+        <div class="faq-a">Desa els saldos i pesos que has escrit, calcula com repartir l'aportació, actualitza els saldos actuals amb el resultat i guarda una foto del mes actual. El mes que ve partiràs directament d'aquí, sense haver de tornar a introduir els saldos.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">L'aportació es recorda?</div>
+        <div class="faq-a">Sí. Pots fixar una <strong>aportació per defecte</strong> que es precarregarà cada mes. Pots canviar-la fent clic a "Aportació" al costat del botó de calcular.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Puc afegir o modificar fons?</div>
+        <div class="faq-a">Sí. Afegeix els fons que vulguis amb el botó <strong>"+ Afegir fons"</strong> (et demana nom i ISIN); pots fer-ho en qualsevol moment, fins i tot mesos després, sense perdre l'historial. D'un fons ja creat pots editar el <strong>nom i el color</strong> amb el llapis ✎. L'ISIN no es pot canviar: si un fons canvia, reinicia les dades i comença de nou.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Puc canviar els pesos objectiu?</div>
+        <div class="faq-a">Sí, edita els camps de percentatge al costat de cada fons. Han de sumar exactament <strong>100%</strong>; sinó, el càlcul no s'executarà. S'actualitzen automàticament quan calcules.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">On es guarden les dades?</div>
+        <div class="faq-a">Tot viu en una base de dades <strong>SQLite al teu servidor</strong>, dins un volum Docker. Les dades no surten de la teva xarxa en cap moment.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-row">
+      <span>Fet amb ❤️ des de Sant Celoni.</span>
+      <div class="footer-links">
+        <button class="footer-link" id="faq-btn">Com funciona</button>
+      </div>
+    </div>
+    <p class="footer-disclaimer">Aquesta eina és per ús personal i informatiu. No constitueix assessorament financer, fiscal ni d'inversió. Les dades i càlculs que mostra no garanteixen cap resultat. Consulta un professional qualificat abans de prendre decisions d'inversió.</p>
+  </footer>
 
 <script>
 const API = ""; // same origin
 let FUNDS = [];
+let PALETTE = [];
 let DEFAULT_CONTRIBUTION = "";
-const HEX = { equity:"#2f6f4f", emerging:"#b8762e", bond:"#3a5a78" };
 
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const eur=n=>n.toLocaleString("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const pct=n=>n.toLocaleString("ca-ES",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
@@ -183,36 +312,61 @@ async function api(path,opts){
 async function init(){
   const st=await api("/api/state");
   FUNDS=st.funds;
+  PALETTE=st.palette||[];
   DEFAULT_CONTRIBUTION=st.defaultContribution||"";
+  if(toggleEmpty()) return; // no funds → welcome screen
   renderFunds(st.balances);
   updateWeightCheck();
-  // month + contribution defaults
-  const d=new Date();
-  document.getElementById("month").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-  const cEl=document.getElementById("contribution");
-  if(DEFAULT_CONTRIBUTION!=="")cEl.value=DEFAULT_CONTRIBUTION;
-  renderDefaultHint();
+  updateContributionDisplay();
   await renderHistory();
 }
 
-function renderDefaultHint(){
-  const el=document.getElementById("default-hint");
-  if(DEFAULT_CONTRIBUTION!==""){
-    el.innerHTML=`Aportació per defecte: <strong>${eur(Number(DEFAULT_CONTRIBUTION))}</strong>. <button class="link-btn" id="clear-default">canviar</button>`;
-    el.querySelector("#clear-default").addEventListener("click",async()=>{
-      const v=prompt("Nova aportació mensual per defecte (€):",DEFAULT_CONTRIBUTION);
-      if(v!==null){await api("/api/settings/contribution",{method:"PUT",body:JSON.stringify({value:v})});DEFAULT_CONTRIBUTION=v;document.getElementById("contribution").value=v;renderDefaultHint();toast("Aportació per defecte actualitzada");}
-    });
-  }else{
-    el.innerHTML=`<button class="link-btn" id="set-default">Fixar aquesta aportació com a valor per defecte</button>`;
-    el.querySelector("#set-default").addEventListener("click",async()=>{
-      const v=document.getElementById("contribution").value;
-      if(!(Number(v)>0)){toast("Posa una aportació primer");return;}
-      await api("/api/settings/contribution",{method:"PUT",body:JSON.stringify({value:v})});
-      DEFAULT_CONTRIBUTION=v;renderDefaultHint();toast("Aportació per defecte fixada");
-    });
-  }
+// Show the welcome screen when there are no funds; returns true if empty.
+function toggleEmpty(){
+  const empty=FUNDS.length===0;
+  document.getElementById("welcome").classList.toggle("hidden",!empty);
+  document.getElementById("app").classList.toggle("hidden",empty);
+  document.getElementById("reset-btn").classList.toggle("hidden",empty);
+  return empty;
 }
+
+// Reload funds after add/edit without disturbing the month/contribution inputs.
+async function refreshFunds(){
+  const st=await api("/api/state");
+  FUNDS=st.funds;
+  PALETTE=st.palette||PALETTE;
+  if(toggleEmpty()) return;
+  renderFunds(st.balances);
+  updateWeightCheck();
+  await renderHistory();
+}
+
+function updateContributionDisplay(){
+  const v=DEFAULT_CONTRIBUTION;
+  document.getElementById("contribution-display").textContent=(v||"200")+" €";
+  document.getElementById("contribution").value=v||"";
+}
+document.getElementById("edit-contribution").addEventListener("click",()=>{
+  document.getElementById("contribution-input").value=DEFAULT_CONTRIBUTION||"200";
+  document.getElementById("contribution-modal").classList.remove("hidden");
+  document.getElementById("contribution-input").focus();
+});
+document.getElementById("contribution-cancel").addEventListener("click",()=>{
+  document.getElementById("contribution-modal").classList.add("hidden");
+});
+document.getElementById("contribution-modal").addEventListener("click",e=>{
+  if(e.target===e.currentTarget)document.getElementById("contribution-modal").classList.add("hidden");
+});
+document.getElementById("contribution-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const v=document.getElementById("contribution-input").value.trim();
+  if(!v||Number(v)<=0){toast("Posa un import vàlid");return;}
+  await api("/api/settings/contribution",{method:"PUT",body:JSON.stringify({value:v})});
+  DEFAULT_CONTRIBUTION=v;
+  updateContributionDisplay();
+  document.getElementById("contribution-modal").classList.add("hidden");
+  toast("Aportació per defecte actualitzada");
+});
 
 // ---- render fund inputs ----
 const fundsEl=document.getElementById("funds");
@@ -226,8 +380,8 @@ function renderFunds(balances){
     row.className="fund-row";
     row.innerHTML=`
       <div class="fund-id">
-        <span class="dot ${f.css_class}"></span>
-        <div><div class="fund-name">${f.name}</div><div class="fund-isin">${f.isin}</div></div>
+        <span class="dot" style="background:${f.color}"></span>
+        <div><div class="fund-name"><span class="fund-name-text" title="${esc(f.name)}">${esc(f.name)}</span><button class="fund-edit" title="Editar nom i color">✎</button></div><div class="fund-isin"><a href="https://www.morningstar.com/search?query=${encodeURIComponent(f.isin)}" target="_blank" rel="noopener">${esc(f.isin)}</a></div></div>
       </div>
       <div class="field">
         <label>saldo</label>
@@ -241,6 +395,7 @@ function renderFunds(balances){
     fundsEl.appendChild(row);
     row.querySelector(`#bal-${f.fund_key}`).addEventListener("input",e=>{localBalances[f.fund_key]=e.target.value===""?null:parseFloat(e.target.value);});
     row.querySelector(`#tgt-${f.fund_key}`).addEventListener("input",e=>{localTargets[f.fund_key]=e.target.value===""?0:parseFloat(e.target.value);updateWeightCheck();});
+    row.querySelector(".fund-edit").addEventListener("click",()=>openFundModal("edit",f));
   });
 }
 
@@ -261,9 +416,9 @@ async function saveState(){
 async function calculate(){
   const sum=FUNDS.reduce((a,f)=>a+(parseFloat(localTargets[f.fund_key])||0),0);
   if(Math.abs(sum-100)>0.01){updateWeightCheck();toast("Els pesos han de sumar 100%");return;}
-  const contribution=parseFloat(document.getElementById("contribution").value)||0;
-  if(contribution<=0){document.getElementById("contribution").focus();return;}
-  const month=document.getElementById("month").value||null;
+  const contribution=parseFloat(DEFAULT_CONTRIBUTION)||200;
+  if(contribution<=0){document.getElementById("edit-contribution").click();return;}
+  const d=new Date();const month=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   // save current inputs first so server computes from fresh balances/targets
   await saveState();
   let r;
@@ -288,8 +443,8 @@ function renderResult(r,contribution){
     const f=FUNDS.find(x=>x.fund_key===a.fund_key);
     const o=document.createElement("div");o.className="order";
     o.innerHTML=`
-      <span class="dot ${f.css_class}"></span>
-      <div><div class="order-name">${f.name}</div><div class="order-detail">${f.isin}</div></div>
+      <span class="dot" style="background:${f.color}"></span>
+      <div><div class="order-name">${esc(f.name)}</div><div class="order-detail"><a href="https://www.morningstar.com/search?query=${encodeURIComponent(f.isin)}" target="_blank" rel="noopener">${esc(f.isin)}</a></div></div>
       <div><div class="order-amount ${a.amount<0.005?"zero":""}">${a.amount<0.005?"—":eur(a.amount)}</div>
       <div class="order-pct">${pct(a.afterPct)} després · obj. ${f.target}%</div></div>`;
     ordersEl.appendChild(o);
@@ -300,7 +455,7 @@ function renderResult(r,contribution){
   r.allocation.forEach(a=>{
     const f=FUNDS.find(x=>x.fund_key===a.fund_key);
     const off=Math.abs(a.afterPct-f.target)>1.5;
-    t.innerHTML+=`<tr><td>${f.name.split(" ")[0]} ${f.name.includes("Emerg")?"emerg.":f.name.includes("fixa")?"fixa":"global"}</td>
+    t.innerHTML+=`<tr><td>${esc(f.name)}</td>
       <td>${eur(r.current[a.fund_key])}</td><td>${a.amount<0.005?"—":eur(a.amount)}</td>
       <td>${eur(a.after)}</td><td class="${off?"drift-off":"drift-ok"}">${pct(a.afterPct)}</td></tr>`;
   });
@@ -341,15 +496,16 @@ async function renderHistory(){
   const body=document.getElementById("history-body");
   if(!h.length){body.innerHTML=`<div class="empty-history">Encara no hi ha històric. Calcula el repartiment d'aquest mes i es desarà automàticament la primera foto.</div>`;return;}
   const labels=h.map(s=>monthLabel(s.month));
-  const colorOf=k=>HEX[(FUNDS.find(f=>f.fund_key===k)||{}).css_class]||"#888";
+  const colorOf=k=>(FUNDS.find(f=>f.fund_key===k)||{}).color||"#888";
   const valSeries=FUNDS.map(f=>({color:colorOf(f.fund_key),values:h.map(s=>({y:s.balances[f.fund_key]||0}))}));
   const totalSeries=[{color:"#1c2321",values:h.map(s=>({y:s.total||0}))}];
   const wSeries=FUNDS.map(f=>({color:colorOf(f.fund_key),values:h.map(s=>{const t=s.total||0;return{y:t>0?(s.balances[f.fund_key]/t*100):0};})}));
   const refs=FUNDS.map(f=>({v:f.target,color:colorOf(f.fund_key)}));
   let cum=0;const contribCum=h.map(s=>{cum+=s.contribution||0;return cum;});
   const investedSeries=[{color:"#1c2321",values:h.map(s=>({y:s.total||0}))},{color:"#9a3b2e",values:contribCum.map(c=>({y:c}))}];
-  const legend=items=>`<div class="legend">${items.map(it=>`<span><span class="swatch" style="background:${it.c}"></span>${it.l}</span>`).join("")}</div>`;
-  const fundLegend=FUNDS.map(f=>({c:colorOf(f.fund_key),l:f.name.split(" ").slice(0,2).join(" ")}));
+  const legend=items=>`<div class="legend">${items.map(it=>`<span><span class="swatch" style="background:${it.c}"></span>${esc(it.l)}</span>`).join("")}</div>`;
+  const shortName=f=>f.name.split(" ").slice(0,2).join(" ");
+  const fundLegend=FUNDS.map(f=>({c:colorOf(f.fund_key),l:shortName(f)}));
   body.innerHTML=`
     <div class="chart-block">
       <div class="chart-title">Valor de cada fons i total · €</div>
@@ -361,7 +517,7 @@ async function renderHistory(){
       <div class="chart-title">Pesos reals vs objectiu · %</div>
       <div class="chart-sub">El pes real de cada fons. Les línies puntejades són els teus objectius. Com més enganxades, més equilibrada.</div>
       <div class="chart-wrap">${lineChart(wSeries,labels,{min:0,max:Math.max(70,...wSeries.flatMap(s=>s.values.map(v=>v.y)))+5,pct:true,refs})}</div>
-      ${legend(FUNDS.map(f=>({c:colorOf(f.fund_key),l:f.name.split(" ").slice(0,2).join(" ")+" (obj. "+f.target+"%)"})))}
+      ${legend(FUNDS.map(f=>({c:colorOf(f.fund_key),l:shortName(f)+" (obj. "+f.target+"%)"})))}
     </div>
     <div class="chart-block">
       <div class="chart-title">Valor vs aportat acumulat · €</div>
@@ -380,17 +536,82 @@ function histTable(h){
     <td><strong>${eur(s.total||0)}</strong></td><td>+${eur(s.contribution||0)}</td>
     <td><button class="del" title="Esborrar" data-month="${s.month}">×</button></td></tr>`).join("");
   return `<table class="hist-table"><thead><tr><th>Mes</th>
-    ${FUNDS.map(f=>`<th>${f.name.split(" ")[1]||f.name}</th>`).join("")}
+    ${FUNDS.map(f=>`<th>${esc(f.name.split(" ").slice(0,2).join(" "))}</th>`).join("")}
     <th>Total</th><th>Aportat</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-// ---- wire up ----
-document.getElementById("calc").addEventListener("click",()=>calculate().catch(e=>toast(e.message)));
-document.getElementById("save").addEventListener("click",async()=>{
-  try{await saveState();const tag=document.getElementById("saved-tag");tag.classList.remove("hidden");setTimeout(()=>tag.classList.add("hidden"),1800);}
-  catch(e){toast(e.message);}
+// ---- reset ----
+document.getElementById("reset-btn").addEventListener("click",()=>{
+  document.getElementById("reset-modal").classList.remove("hidden");
 });
-document.getElementById("contribution").addEventListener("keydown",e=>{if(e.key==="Enter")calculate().catch(er=>toast(er.message));});
+document.getElementById("reset-cancel").addEventListener("click",()=>{
+  document.getElementById("reset-modal").classList.add("hidden");
+});
+document.getElementById("reset-modal").addEventListener("click",e=>{
+  if(e.target===e.currentTarget)document.getElementById("reset-modal").classList.add("hidden");
+});
+document.getElementById("reset-confirm").addEventListener("click",async()=>{
+  document.getElementById("reset-modal").classList.add("hidden");
+  try{
+    await api("/api/reset",{method:"POST"});
+    DEFAULT_CONTRIBUTION="";
+    document.getElementById("result-section").classList.add("hidden");
+    await init();
+    toast("Dades reiniciades");
+  }catch(e){toast(e.message);}
+});
+
+// ---- add / edit funds ----
+let fundMode="add", fundKey=null, fundColor=null;
+const fundModal=document.getElementById("fund-modal");
+function renderSwatches(){
+  const wrap=document.getElementById("fund-swatches");
+  wrap.innerHTML=PALETTE.map(c=>`<button type="button" class="swatch-btn ${c===fundColor?"sel":""}" style="background:${c}" data-color="${c}"></button>`).join("");
+  wrap.querySelectorAll(".swatch-btn").forEach(b=>b.addEventListener("click",()=>{fundColor=b.dataset.color;renderSwatches();}));
+}
+function openFundModal(mode,fund){
+  fundMode=mode; fundKey=fund?fund.fund_key:null;
+  document.getElementById("fund-modal-title").textContent=mode==="add"?"Afegir fons":"Editar fons";
+  const nameI=document.getElementById("fund-name"), isinI=document.getElementById("fund-isin");
+  nameI.value=fund?fund.name:""; isinI.value=fund?fund.isin:"";
+  isinI.disabled=mode==="edit"; // l'ISIN identifica el fons; per canviar-lo, es comença de nou
+  const colorField=document.getElementById("fund-color-field");
+  if(mode==="edit"){fundColor=fund.color;colorField.style.display="block";renderSwatches();}
+  else{fundColor=null;colorField.style.display="none";}
+  fundModal.classList.remove("hidden");
+  nameI.focus();
+}
+function closeFundModal(){fundModal.classList.add("hidden");}
+document.getElementById("fund-cancel").addEventListener("click",closeFundModal);
+fundModal.addEventListener("click",e=>{if(e.target===e.currentTarget)closeFundModal();});
+document.getElementById("add-first-fund").addEventListener("click",()=>openFundModal("add"));
+document.getElementById("add-fund").addEventListener("click",()=>openFundModal("add"));
+document.getElementById("fund-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const name=document.getElementById("fund-name").value.trim();
+  const isin=document.getElementById("fund-isin").value.trim();
+  if(!name){toast("Posa un nom");return;}
+  try{
+    if(fundMode==="add"){
+      if(!isin){toast("Posa un ISIN");return;}
+      await api("/api/funds",{method:"POST",body:JSON.stringify({name,isin})});
+      toast("Fons afegit");
+    }else{
+      await api("/api/funds/"+encodeURIComponent(fundKey),{method:"PATCH",body:JSON.stringify({name,color:fundColor})});
+      toast("Fons actualitzat");
+    }
+    closeFundModal();
+    // Save current balances/targets before refreshing so they aren't lost
+    if(FUNDS.length>0) await saveState();
+    await refreshFunds();
+  }catch(err){toast(err.message);}
+});
+
+// ---- wire up ----
+document.getElementById("faq-btn").addEventListener("click",()=>document.getElementById("faq-modal").classList.remove("hidden"));
+document.getElementById("faq-close").addEventListener("click",()=>document.getElementById("faq-modal").classList.add("hidden"));
+document.getElementById("faq-modal").addEventListener("click",e=>{if(e.target===e.currentTarget)document.getElementById("faq-modal").classList.add("hidden");});
+document.getElementById("calc").addEventListener("click",()=>calculate().catch(e=>toast(e.message)));
 init().catch(e=>{document.body.insertAdjacentHTML("beforeend",`<p style="color:var(--warn);margin-top:1rem">No s'ha pogut connectar amb el servidor: ${e.message}</p>`);});
 </script>
 </body>
